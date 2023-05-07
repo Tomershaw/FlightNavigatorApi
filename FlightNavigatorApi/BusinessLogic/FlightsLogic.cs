@@ -24,19 +24,17 @@ namespace FlightNavigatorApi.BusinessLogic
                                                 .Where(x => x.Leg < Leg.LegFinshed)
                                                 .ToLookup(x => x.Leg)
                                                 .ToDictionary(x => x.Key, x => x.ToList());
-
-            HandleLegWaiting(allActiveFlights);
-            HandleLegQueue(allActiveFlights);
-            HandleLegOneTwo(allActiveFlights, Leg.Leg1, Leg.Leg2);
-            HandleLegOneTwo(allActiveFlights, Leg.Leg2, Leg.Leg3);
-            HandleLegThree(allActiveFlights);
-            HandleLegFour(allActiveFlights);
-            HandleLegFive(allActiveFlights);
-            HandleLegSixSeven(allActiveFlights, Leg.Leg6);
-            HandleLegSixSeven(allActiveFlights, Leg.Leg7);
-            HandleLegEight(allActiveFlights);
             HandleLegNine(allActiveFlights);
-
+            HandleLegEight(allActiveFlights);
+            HandleLegSixSeven(allActiveFlights, Leg.Leg7);
+            HandleLegSixSeven(allActiveFlights, Leg.Leg6);
+            HandleLegFive(allActiveFlights);
+            HandleLegFour(allActiveFlights);
+            HandleLegThree(allActiveFlights);
+            HandleLegOneTwo(allActiveFlights, Leg.Leg2, Leg.Leg3);
+            HandleLegOneTwo(allActiveFlights, Leg.Leg1, Leg.Leg2);
+            HandleLegQueue(allActiveFlights);
+            HandleLegWaiting(allActiveFlights);
             await _dataContext.SaveChangesAsync();
         }
 
