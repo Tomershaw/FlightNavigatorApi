@@ -1,11 +1,10 @@
-﻿using Microsoft.IdentityModel.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SimulatorFlight.Model
+namespace Shared
 {
     public class FlightDto
     {
@@ -14,6 +13,7 @@ namespace SimulatorFlight.Model
         public bool IsArrival { get; set; }
 
         public string? AirLine { get; set; }
+        public Leg Leg { get; set; }
 
         public DateTime CreatedAt { get; set; }
 
@@ -31,6 +31,7 @@ namespace SimulatorFlight.Model
             int index = random.Next(_airlineCodes.Length);
             AirLine = _airlines[index];
             FlightNumber = $"{_airlineCodes[index]}{num}";
+            Leg = Leg.LegWaiting;
         }
 
         public override string ToString()
@@ -39,6 +40,4 @@ namespace SimulatorFlight.Model
             return $"flight number: {FlightNumber}, status:{status}, registered at airport at:{CreatedAt:G}";
         }
     }
-
 }
-

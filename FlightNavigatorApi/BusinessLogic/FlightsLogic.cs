@@ -1,5 +1,6 @@
 ﻿using FlightNavigatorApi.DAL;
 using FlightNavigatorApi.Model;
+using Shared;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 

@@ -1,4 +1,10 @@
-﻿namespace FlightNavigatorApi.Model
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Shared
 {
     public enum Leg
     {
@@ -13,9 +19,6 @@
         Leg8 = 8,
         Leg9 = 9,
         LegFinshed = 10,
-        LegQueue=11,
+        LegQueue = 11,
     }
 }
-
-
-

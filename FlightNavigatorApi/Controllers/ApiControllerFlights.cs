@@ -2,9 +2,7 @@
 using FlightNavigatorApi.DAL;
 using FlightNavigatorApi.Model;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic;
-using SimulatorFlight.Model;
+using Shared;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -26,9 +24,18 @@ namespace FlightNavigatorApi.Controllers
         }
         // GET: api/<ApiControllerFlights>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IEnumerable<FlightDto> Get()
         {
-            return new string[] { "value1", "value2" };
+            var allflightactive = _dataContext.Flight.Where(x => x.Leg < Leg.LegFinshed);
+            return allflightactive.Select(x => new FlightDto()
+            {
+                AirLine =x.Airline,
+                IsArrival= x.IsArrival,
+                CreatedAt= x.CreatedAt,
+                Leg = x.Leg,
+                FlightNumber = x.FlightNumber
+            }).AsEnumerable();
+
         }
 
         // GET api/<ApiControllerFlights>/5

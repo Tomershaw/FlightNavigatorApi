@@ -1,4 +1,4 @@
-﻿using SimulatorFlight.Model;
+﻿using Shared;
 using System.Net.Http.Json;
 
 public class Program

@@ -1,4 +1,6 @@
-﻿namespace FlightNavigatorApi.Model
+﻿using Shared;
+
+namespace FlightNavigatorApi.Model
 {
     public class FlightLogger
     {
