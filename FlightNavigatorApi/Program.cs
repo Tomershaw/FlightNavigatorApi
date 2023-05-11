@@ -11,6 +11,7 @@ using FlightNavigatorApi.BusinessLogic;
 
  try
 {
+    var MyAllowSpecificOrigins = "https://localhost:7088/api/ApiControllerFlights";
 
     var builder = WebApplication.CreateBuilder(args);
     builder.Services.AddDbContext<DbData>(Options => Options.UseSqlServer(builder.Configuration.GetConnectionString("Flight")));
@@ -27,6 +28,15 @@ using FlightNavigatorApi.BusinessLogic;
 
     builder.Services.AddSwaggerGen();
 
+    builder.Services.AddCors(options => {
+        options.AddPolicy(
+            "aaa",
+            policy => {
+                policy.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+            });
+    });
 
 
     var app = builder.Build();
@@ -34,6 +44,8 @@ using FlightNavigatorApi.BusinessLogic;
     // Configure the HTTP request pipeline.
 
     app.UseHttpsRedirection();
+
+    app.UseCors("aaa");
 
     app.UseAuthorization();
     if (app.Environment.IsDevelopment())

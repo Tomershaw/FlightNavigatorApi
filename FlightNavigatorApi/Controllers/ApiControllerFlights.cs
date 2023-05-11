@@ -23,6 +23,7 @@ namespace FlightNavigatorApi.Controllers
             _flightsLogic = flightsLogic;
         }
         // GET: api/<ApiControllerFlights>
+       
         [HttpGet]
         public IEnumerable<FlightDto> Get()
         {
