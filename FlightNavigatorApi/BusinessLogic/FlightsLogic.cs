@@ -1,27 +1,33 @@
 ﻿using FlightNavigatorApi.DAL;
 using FlightNavigatorApi.Model;
 using Shared;
-using Microsoft.EntityFrameworkCore;
-using NLog;
+using FlightNavigatorApi.Hubs;
+using Microsoft.AspNetCore.SignalR;
 
 namespace FlightNavigatorApi.BusinessLogic
 {
-    public class FlightsLogic : IFlightsLogic
+    public class FlightsLogic : IHostedService, IDisposable
     {
-        private readonly DbData _dataContext;
         private readonly ILogger<FlightsLogic> _logger;
-        //private readonly Leg _dataLeg;
+        private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
+        private Timer? _timer = null;
+        private readonly IServiceScopeFactory _serviceProviderFactory;
+        private readonly IHubContext<TerminalHub> _hub;
 
-        public FlightsLogic(ILogger<FlightsLogic> logger, DbData dataContext)
+        public FlightsLogic(ILogger<FlightsLogic> logger, IServiceScopeFactory serviceProviderFactory, IHubContext<TerminalHub> hub)
         {
             _logger = logger;
-            _dataContext = dataContext;
+            _serviceProviderFactory = serviceProviderFactory;
+            _hub = hub;
         }
 
-        public async Task MovePlanes()
+        public void MovePlanes(object? state)
         {
+            _logger.LogDebug($"Moving planes");
+            using var scope = _serviceProviderFactory.CreateAsyncScope();
+            var context = scope.ServiceProvider.GetRequiredService<DbData>();
 
-            var allActiveFlights = _dataContext.Flight
+            var allActiveFlights = context.Flight
                                                 .Where(x => x.Leg < Leg.LegFinshed)
                                                 .ToLookup(x => x.Leg)
                                                 .ToDictionary(x => x.Key, x => x.ToList());
@@ -36,7 +42,18 @@ namespace FlightNavigatorApi.BusinessLogic
             HandleLegOneTwo(allActiveFlights, Leg.Leg1, Leg.Leg2);
             HandleLegQueue(allActiveFlights);
             HandleLegWaiting(allActiveFlights);
-            await _dataContext.SaveChangesAsync();
+            context.SaveChanges();
+            var allFlights = context.Flight
+                                     .Where(x => x.Leg < Leg.LegFinshed)
+                                     .Select(x => new FlightDto()
+                                     {
+                                         AirLine = x.Airline,
+                                         IsArrival = x.IsArrival,
+                                         CreatedAt = x.CreatedAt,
+                                         Leg = x.Leg,
+                                         FlightNumber = x.FlightNumber
+                                     }).ToList();
+            _hub.Clients.All.SendAsync("TransferFlightsData", allFlights);
         }
 
         private void HandleLegNine(Dictionary<Leg, List<Flight>> allActiveFlights)
@@ -240,6 +257,62 @@ namespace FlightNavigatorApi.BusinessLogic
             allActiveFlights[newLeg].Add(flight);
 
             flight.Leg = newLeg;
+        }
+
+        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        //{
+        //    using PeriodicTimer timer = new PeriodicTimer(_period);
+        //    while (
+        //        !stoppingToken.IsCancellationRequested &&
+        //        await timer.WaitForNextTickAsync(stoppingToken))
+        //    {
+        //        try
+        //        {
+        //            if (IsEnabled)
+        //            {
+        //                using var scope = _factory.CreateAsyncScope();
+        //                var context = scope.ServiceProvider.GetRequiredService<DbData>();
+        //                var flightCount = context.Flight.Count();
+        //                _executionCount++;
+        //                _logger.LogInformation(
+        //                    $"Executed PeriodicHostedService - Count: {_executionCount}; {flightCount}");
+        //            }
+        //            else
+        //            {
+        //                _logger.LogInformation(
+        //                    "Skipped PeriodicHostedService");
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            _logger.LogInformation(
+        //                $"Failed to execute PeriodicHostedService with exception message {ex.Message}. Good luck next round!");
+        //        }
+        //    }
+        //}
+
+        public Task StartAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Timed Hosted Service running.");
+
+            _timer = new Timer(MovePlanes, null, TimeSpan.Zero,
+                TimeSpan.FromSeconds(15));
+
+            return Task.CompletedTask;
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Timed Hosted Service is stopping.");
+
+            _timer?.Change(Timeout.Infinite, 0);
+
+            return Task.CompletedTask;
+        }
+
+        public void Dispose()
+        {
+            _timer?.Dispose();
         }
 
     }

@@ -1,64 +1,53 @@
 using FlightNavigatorApi.DAL;
-using NLog;
-using NLog.Web;
 using Microsoft.EntityFrameworkCore;
 using FlightNavigatorApi.BusinessLogic;
-
-//var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-//logger.Debug("init main");
+using FlightNavigatorApi.Hubs;
+using NLog.Web;
 
 // Add services to the container.
-
- try
+try
 {
-    var MyAllowSpecificOrigins = "https://localhost:7088/api/ApiControllerFlights";
-
     var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("CorsPolicy", builder => builder
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+    });
     builder.Services.AddDbContext<DbData>(Options => Options.UseSqlServer(builder.Configuration.GetConnectionString("Flight")));
-    builder.Services.AddScoped<DbData>();
-    builder.Services.AddScoped<IFlightsLogic,FlightsLogic>();
-
-    // Add services to the container.
+ 
+    builder.Services.AddHostedService<FlightsLogic>();
+    builder.Services.AddSignalR();
 
     builder.Services.AddControllers();
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug);
     builder.Host.UseNLog();
-    builder.Services.AddEndpointsApiExplorer();
+    //builder.Services.AddEndpointsApiExplorer();
 
-    builder.Services.AddSwaggerGen();
-
-    builder.Services.AddCors(options => {
-        options.AddPolicy(
-            "aaa",
-            policy => {
-                policy.AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader();
-            });
-    });
-
-
+    //builder.Services.AddSwaggerGen();
     var app = builder.Build();
 
     // Configure the HTTP request pipeline.
 
     app.UseHttpsRedirection();
 
-    app.UseCors("aaa");
+    app.UseCors("CorsPolicy");
 
     app.UseAuthorization();
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
-
+    //if (app.Environment.IsDevelopment())
+    //{
+    //    app.UseSwagger();
+    //    app.UseSwaggerUI();
+    //}
     app.MapControllers();
+    app.MapHub<TerminalHub>("/board");
 
     app.Run();
 }
-catch (Exception e)
+catch
 {
     // NLog: catch setup errors
     //logger.Error(e, "Stopped program because of exception");

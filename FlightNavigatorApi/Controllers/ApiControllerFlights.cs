@@ -1,7 +1,7 @@
-﻿using FlightNavigatorApi.BusinessLogic;
-using FlightNavigatorApi.DAL;
-using FlightNavigatorApi.Model;
+﻿using FlightNavigatorApi.DAL;
+using FlightNavigatorApi.Hubs;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Shared;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -14,65 +14,49 @@ namespace FlightNavigatorApi.Controllers
     {
         private readonly DbData _dataContext;
         private readonly ILogger<ApiControllerFlights> _logger;
-        private readonly IFlightsLogic _flightsLogic;
-
-        public ApiControllerFlights(DbData context, ILogger<ApiControllerFlights> logger, IFlightsLogic flightsLogic)
+        private readonly IHubContext<TerminalHub> _hub;
+        public ApiControllerFlights(DbData context, ILogger<ApiControllerFlights> logger, IHubContext<TerminalHub> hub)
         {
             _dataContext = context;
             _logger = logger;
-            _flightsLogic = flightsLogic;
+            _hub = hub;
         }
-        // GET: api/<ApiControllerFlights>
-       
         [HttpGet]
-        public IEnumerable<FlightDto> Get()
+        [Route("board")]
+        public IActionResult Get()
         {
-            var allflightactive = _dataContext.Flight.Where(x => x.Leg < Leg.LegFinshed);
-            return allflightactive.Select(x => new FlightDto()
-            {
-                AirLine =x.Airline,
-                IsArrival= x.IsArrival,
-                CreatedAt= x.CreatedAt,
-                Leg = x.Leg,
-                FlightNumber = x.FlightNumber
-            }).AsEnumerable();
+            _hub.Clients.All.SendAsync("TransferFlightsData", GetAllFlights());
 
+            return Ok(new { Message = "Request Completed" });
+        }
+        private List<FlightDto> GetAllFlights()
+        {
+            return _dataContext.Flight
+                                .Where(x => x.Leg < Leg.LegFinshed)
+                                .Select(x => new FlightDto()
+                                {
+                                    AirLine = x.Airline,
+                                    IsArrival = x.IsArrival,
+                                    CreatedAt = x.CreatedAt,
+                                    Leg = x.Leg,
+                                    FlightNumber = x.FlightNumber
+                                }).ToList();
         }
 
-        // GET api/<ApiControllerFlights>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet]
+        [Route("all")]
+        public IEnumerable<FlightDto> GetAll()
         {
-            return "value";
-        }
-
-        // POST api/<ApiControllerFlights>
-        [HttpPost]
-        public async Task Post([FromBody] FlightDto value)
-        {
-            _dataContext.Add(new Flight
-            {
-                FlightNumber = value.FlightNumber,
-                IsArrival = value.IsArrival,
-                Leg = Leg.LegWaiting,
-                CreatedAt = value.CreatedAt
-            });
-            await _dataContext.SaveChangesAsync();
-            await _flightsLogic.MovePlanes();
-
-
-        }
-
-        // PUT api/<ApiControllerFlights>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<ApiControllerFlights>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            return _dataContext.Flight
+                                .Where(x => x.Leg < Leg.LegFinshed)
+                                .Select(x => new FlightDto()
+                                {
+                                    AirLine = x.Airline,
+                                    IsArrival = x.IsArrival,
+                                    CreatedAt = x.CreatedAt,
+                                    Leg = x.Leg,
+                                    FlightNumber = x.FlightNumber
+                                }).AsEnumerable();
         }
     }
 }
