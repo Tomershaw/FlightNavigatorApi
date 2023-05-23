@@ -12,7 +12,7 @@ namespace Shared
 
         public bool IsArrival { get; set; }
 
-        public string? AirLine { get; set; }
+        public string AirLine { get; set; } = string.Empty;
         public Leg Leg { get; set; }
 
         public DateTime CreatedAt { get; set; }
@@ -24,7 +24,7 @@ namespace Shared
         {
             Random random = new();
             int num = random.Next(1000000);
-            random = new();
+            //random = new();
             IsArrival = random.Next(0, 2) == 0;
 
             CreatedAt = DateTime.Now;

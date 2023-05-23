@@ -1,5 +1,6 @@
 ﻿using FlightNavigatorApi.DAL;
 using FlightNavigatorApi.Hubs;
+using FlightNavigatorApi.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Shared;
@@ -58,5 +59,21 @@ namespace FlightNavigatorApi.Controllers
                                     FlightNumber = x.FlightNumber
                                 }).AsEnumerable();
         }
+
+        [HttpPost]
+        public async Task Post([FromBody] FlightDto value)
+        {
+            _dataContext.Add(new Flight
+            {
+                FlightNumber = value.FlightNumber,
+                IsArrival = value.IsArrival,
+                Leg = Leg.LegWaiting,
+                Airline= value.AirLine,
+                CreatedAt = value.CreatedAt
+            });
+            await _dataContext.SaveChangesAsync();
+
+        }
+
     }
 }

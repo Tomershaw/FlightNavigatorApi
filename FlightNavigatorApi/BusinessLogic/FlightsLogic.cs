@@ -1,16 +1,17 @@
 ﻿using FlightNavigatorApi.DAL;
 using FlightNavigatorApi.Model;
-using Shared;
 using FlightNavigatorApi.Hubs;
 using Microsoft.AspNetCore.SignalR;
+using Shared;
 
 namespace FlightNavigatorApi.BusinessLogic
 {
     public class FlightsLogic : IHostedService, IDisposable
     {
         private readonly ILogger<FlightsLogic> _logger;
+
         private readonly TimeSpan _period = TimeSpan.FromSeconds(5);
-        private Timer? _timer = null;
+        private Timer? _timer = null;   
         private readonly IServiceScopeFactory _serviceProviderFactory;
         private readonly IHubContext<TerminalHub> _hub;
 
@@ -21,6 +22,10 @@ namespace FlightNavigatorApi.BusinessLogic
             _hub = hub;
         }
 
+        public FlightsLogic(ILogger<FlightsLogic> logger)
+        {
+            _logger = logger;
+        }
         public void MovePlanes(object? state)
         {
             _logger.LogDebug($"Moving planes");
@@ -68,7 +73,7 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegEight(Dictionary<Leg, List<Flight>> allActiveFlights)
+        public void HandleLegEight(Dictionary<Leg, List<Flight>> allActiveFlights)
         {
             if (!allActiveFlights.ContainsKey(Leg.Leg8) || !allActiveFlights[Leg.Leg8].Any())
             {
@@ -83,7 +88,7 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegSixSeven(Dictionary<Leg, List<Flight>> allActiveFlights, Leg legFrom)
+        public void HandleLegSixSeven(Dictionary<Leg, List<Flight>> allActiveFlights, Leg legFrom)
         {
             if (!allActiveFlights.ContainsKey(legFrom) || !allActiveFlights[legFrom].Any())
             {
@@ -106,12 +111,12 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegFive(Dictionary<Leg, List<Flight>> allActiveFlights)
+        public void HandleLegFive(Dictionary<Leg, List<Flight>> allActiveFlights)
         {
             if (!allActiveFlights.ContainsKey(Leg.Leg5) || !allActiveFlights[Leg.Leg5].Any())
             {
                 return;
-            }
+            }   
 
             var first2FlightsInLeg5 = allActiveFlights[Leg.Leg5].OrderBy(x => x.CreatedAt).Take(2);
 
@@ -128,7 +133,7 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegFour(Dictionary<Leg, List<Flight>> allActiveFlights)
+        public void HandleLegFour(Dictionary<Leg, List<Flight>> allActiveFlights)
         {
             if (!allActiveFlights.ContainsKey(Leg.Leg4) || !allActiveFlights[Leg.Leg4].Any())
             {
@@ -146,7 +151,7 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegOneTwo(Dictionary<Leg, List<Flight>> allActiveFlights, Leg fromLeg, Leg toLeg)
+        public void HandleLegOneTwo(Dictionary<Leg, List<Flight>> allActiveFlights, Leg fromLeg, Leg toLeg)
         {
             if (!allActiveFlights.ContainsKey(fromLeg) || !allActiveFlights[fromLeg].Any())
             {
@@ -160,7 +165,7 @@ namespace FlightNavigatorApi.BusinessLogic
 
 
         }
-        private void HandleLegThree(Dictionary<Leg, List<Flight>> allActiveFlights)
+        public void HandleLegThree(Dictionary<Leg, List<Flight>> allActiveFlights)
         {
             if (!allActiveFlights.ContainsKey(Leg.Leg3) || !allActiveFlights[Leg.Leg3].Any())
             {
@@ -175,7 +180,7 @@ namespace FlightNavigatorApi.BusinessLogic
             }
         }
 
-        private void HandleLegQueue(Dictionary<Leg, List<Flight>> allActiveFlights)
+        public void HandleLegQueue(Dictionary<Leg, List<Flight>> allActiveFlights)
         {
             if (!allActiveFlights.ContainsKey(Leg.LegQueue) || !allActiveFlights[Leg.LegQueue].Any())
             {
@@ -258,38 +263,6 @@ namespace FlightNavigatorApi.BusinessLogic
 
             flight.Leg = newLeg;
         }
-
-        //protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        //{
-        //    using PeriodicTimer timer = new PeriodicTimer(_period);
-        //    while (
-        //        !stoppingToken.IsCancellationRequested &&
-        //        await timer.WaitForNextTickAsync(stoppingToken))
-        //    {
-        //        try
-        //        {
-        //            if (IsEnabled)
-        //            {
-        //                using var scope = _factory.CreateAsyncScope();
-        //                var context = scope.ServiceProvider.GetRequiredService<DbData>();
-        //                var flightCount = context.Flight.Count();
-        //                _executionCount++;
-        //                _logger.LogInformation(
-        //                    $"Executed PeriodicHostedService - Count: {_executionCount}; {flightCount}");
-        //            }
-        //            else
-        //            {
-        //                _logger.LogInformation(
-        //                    "Skipped PeriodicHostedService");
-        //            }
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            _logger.LogInformation(
-        //                $"Failed to execute PeriodicHostedService with exception message {ex.Message}. Good luck next round!");
-        //        }
-        //    }
-        //}
 
         public Task StartAsync(CancellationToken cancellationToken)
         {

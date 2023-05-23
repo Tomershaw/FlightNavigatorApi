@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlightSimulator", "Simulato
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{1FE0E806-6C91-4B08-A97C-52B2E72066D8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTestFlightNavigator", "UnitTestFlightNavigator\UnitTestFlightNavigator.csproj", "{4D90D4FB-D4B3-4CCC-8045-5CC42D01F3ED}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{1FE0E806-6C91-4B08-A97C-52B2E72066D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1FE0E806-6C91-4B08-A97C-52B2E72066D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1FE0E806-6C91-4B08-A97C-52B2E72066D8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D90D4FB-D4B3-4CCC-8045-5CC42D01F3ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D90D4FB-D4B3-4CCC-8045-5CC42D01F3ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D90D4FB-D4B3-4CCC-8045-5CC42D01F3ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D90D4FB-D4B3-4CCC-8045-5CC42D01F3ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
